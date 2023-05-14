@@ -119,7 +119,7 @@ class Invert:
     
     def __check_unique(self, formula, top_formulas):
         for i in top_formulas:
-            if not torch.all(formula.buffer.eq(i["formula"].buffer)):
+            if torch.all(formula.buffer.eq(i["formula"].buffer)):
                 return False
         return True
         
