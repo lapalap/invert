@@ -6,6 +6,9 @@ import torchvision
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
+from phi import Phi
+from metrics import Metric
+
 from operator import itemgetter
 import sympy
 
