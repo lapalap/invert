@@ -83,7 +83,7 @@ class Invert:
 
         formula_length = 2
         while formula_length <= L:
-            for i in tqdm(range(B)):
+            for i in tqdm(range(min(B, len(top_formulas)))):
                 for j in range(len(univariate_formulas)):
                     conjunction = top_formulas[i]["formula"] & univariate_formulas[j]
                     if conjunction is not None:
@@ -110,7 +110,7 @@ class Invert:
                                                  "concept_fraction": _concept_fraction})
 
             top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
-            top_formulas = top_formulas[:B]
+            top_formulas = top_formulas[:min(B, len(top_formulas))]
             print(top_formulas)
 
             formula_length += 1
