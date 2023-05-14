@@ -79,7 +79,7 @@ class Phi:
         assert self.concepts == phi.concepts
         assert self.boolean is not None
 
-        result = torch.clip(self.buffer * phi.buffer, min=0, max=1)
+        result = torch.logical_and(self.buffer, phi.buffer)
 
         # check if intersection is empty or everything
         if (result.sum() == 0) or (result.sum() == result.shape[0]):
@@ -100,7 +100,7 @@ class Phi:
         assert self.concepts == phi.concepts
         assert self.boolean is not None
 
-        result = torch.clip(self.buffer + phi.buffer, min=0, max=1)
+        result = torch.logical_or(self.buffer, phi.buffer)
 
         # check if intersection is empty or everything
         if (result.sum() == 0) or (result.sum() == result.shape[0]):
@@ -124,7 +124,7 @@ class Phi:
                    concepts_to_indices=self.concepts_to_indices,
                    boolean=True,
                    device=self.device,
-                   buffer=torch.clip(1 - self.buffer, min=0, max=1))
+                   buffer=torch.logical_not(self.buffer))
 
     def __call__(self, X: torch.Tensor):
         if self.info["n_distinct_concepts"] > 1:

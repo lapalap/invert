@@ -64,7 +64,7 @@ class Invert:
                                    concepts_to_indices = {self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
                                    boolean=True,
                                    device=self.device,
-                                   buffer = self.Labels[:, i].to(self.device)) for i in range(len(self.concepts))]
+                                   buffer = (self.Labels[:, i] == 1).to(self.device)) for i in range(len(self.concepts))]
         
         # adding the inverse ones
         univariate_formulas += [~formula for formula in univariate_formulas]
@@ -73,37 +73,38 @@ class Invert:
         formula_length = 1
         # evaluate_univariate formulas and take best beam_search_size
 
-        scores = [{"formula": formula,
-                   "metric": metric(self.A[:, r], formula.buffer),
-                   "concept_fraction": formula.buffer.sum()/N
-                   }
-                  for formula in univariate_formulas]
-        scores = sorted(scores, key=itemgetter("metric"), reverse=True)
-
-        top_formulas = [formula for formula in scores if formula['concept_fraction'] > threshold][:B]
+        top_formulas = [{"formula": formula,
+                    "length": formula_length,
+                    "metric": metric(self.A[:, r], formula.buffer),
+                    "concept_fraction": formula.buffer.sum()/N
+                    } for formula in univariate_formulas]
+        top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
+        top_formulas = [formula for formula in top_formulas if formula['concept_fraction'] > threshold][:B]
 
         while formula_length < L:
             for i in tqdm(range(B)):
                 for j in range(len(univariate_formulas)):
                     conjunction = top_formulas[i]["formula"] & univariate_formulas[j]
-                    if conjunction is not None and top_formulas[i]["formula"].expr !=univariate_formulas[j].expr:
+                    if conjunction is not None:
                         _metric = metric(self.A[:, r], conjunction.buffer)
                         _sum = conjunction.buffer.sum()
                         _concept_fraction = _sum/N
 
-                        if _concept_fraction > threshold:
+                        if _concept_fraction > threshold and self.__check_unique(conjunction, top_formulas):
                             top_formulas.append({"formula": conjunction,
+                                                 "length": formula_length,
                                                  "metric": _metric,
                                                  "concept_fraction": _concept_fraction})
 
                     disjunction = top_formulas[i]["formula"] | univariate_formulas[j]
-                    if disjunction is not None and top_formulas[i]["formula"].expr != univariate_formulas[j].expr:
+                    if disjunction is not None:
                         _metric = metric(self.A[:, r], disjunction.buffer)
                         _sum = disjunction.buffer.sum()
                         _concept_fraction = _sum/N
 
-                        if _concept_fraction > threshold:
+                        if _concept_fraction > threshold and self.__check_unique(disjunction, top_formulas):
                             top_formulas.append({"formula": disjunction,
+                                                 "length": formula_length,
                                                  "metric": _metric,
                                                  "concept_fraction": _concept_fraction})
 
@@ -114,7 +115,15 @@ class Invert:
             formula_length += 1
 
         #filter for threshold
-        return top_formulas, scores
+        return top_formulas
+    
+    def __check_unique(self, formula, top_formulas):
+        for i in top_formulas:
+            if not torch.all(formula.buffer.eq(i["formula"].buffer)):
+                return False
+        return True
+        
+
         
 
     def __get_filenames_in_a_folder(self, folder: str):

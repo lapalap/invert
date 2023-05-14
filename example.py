@@ -18,9 +18,10 @@ explainer = Invert(
         storage_dir=".invert/",
         device="cpu",
     )
+
 explainer.load_activations(torch.load("/Users/kirillbykov/Documents/Work/INVERT/data/imagenet_val/features50k_densenet161_val.tnsr"),
                            one_hot_labels,
                            data
                            )
 
-explainer.explain_representation(254, 5, 50, Metric())
+explainer.explain_representation(254, 5, 5, Metric())
