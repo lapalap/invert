@@ -90,7 +90,7 @@ class Invert:
                         _sum = conjunction.buffer.sum()
                         _concept_fraction = _sum/N
 
-                        if _concept_fraction > threshold and self.__check_unique(conjunction, top_formulas):
+                        if _concept_fraction > threshold:
                             top_formulas.append({"formula": conjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
@@ -102,7 +102,7 @@ class Invert:
                         _sum = disjunction.buffer.sum()
                         _concept_fraction = _sum/N
 
-                        if _concept_fraction > threshold and self.__check_unique(disjunction, top_formulas):
+                        if _concept_fraction > threshold:
                             top_formulas.append({"formula": disjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
@@ -117,11 +117,11 @@ class Invert:
         #filter for threshold
         return top_formulas
     
-    def __check_unique(self, formula, top_formulas):
-        for i in top_formulas:
-            if torch.all(formula.buffer.eq(i["formula"].buffer)):
-                return False
-        return True
+    # def __check_unique(self, formula, top_formulas):
+    #     for i in top_formulas:
+    #         if torch.all(formula.buffer.eq(i["formula"].buffer)):
+    #             return False
+    #     return True
         
 
         
