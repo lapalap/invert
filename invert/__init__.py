@@ -1,2 +1,2 @@
-from invert.phi import Phi
-from invert.metrics import Metric
+from phi import Phi
+from metrics import Metric
