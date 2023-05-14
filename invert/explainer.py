@@ -76,19 +76,20 @@ class Invert:
         top_formulas = [{"formula": formula,
                     "length": formula_length,
                     "metric": metric(self.A[:, r], formula.buffer),
-                    "concept_fraction": formula.buffer.sum()/N
+                    "concept_fraction": min(formula.buffer.sum(), N - formula.buffer.sum())/N
                     } for formula in univariate_formulas]
         top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
         top_formulas = [formula for formula in top_formulas if formula['concept_fraction'] > threshold][:B]
 
-        while formula_length < L:
+        formula_length = 2
+        while formula_length <= L:
             for i in tqdm(range(B)):
                 for j in range(len(univariate_formulas)):
                     conjunction = top_formulas[i]["formula"] & univariate_formulas[j]
                     if conjunction is not None:
                         _metric = metric(self.A[:, r], conjunction.buffer)
                         _sum = conjunction.buffer.sum()
-                        _concept_fraction = _sum/N
+                        _concept_fraction = min(_sum, N - _sum)/N
 
                         if _concept_fraction > threshold:
                             top_formulas.append({"formula": conjunction,
@@ -100,7 +101,7 @@ class Invert:
                     if disjunction is not None:
                         _metric = metric(self.A[:, r], disjunction.buffer)
                         _sum = disjunction.buffer.sum()
-                        _concept_fraction = _sum/N
+                        _concept_fraction = min(_sum, N - _sum)/N
 
                         if _concept_fraction > threshold:
                             top_formulas.append({"formula": disjunction,
