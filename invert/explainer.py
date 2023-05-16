@@ -79,7 +79,7 @@ class Invert:
                     "concept_fraction": min(formula.buffer.sum(), N - formula.buffer.sum())/N
                     } for formula in univariate_formulas]
         top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
-        top_formulas = [formula for formula in top_formulas if formula['concept_fraction'] > threshold][:B]
+        top_formulas = [formula for formula in top_formulas if formula['concept_fraction'] >= threshold][:B]
 
         formula_length = 2
         while formula_length <= L:
@@ -91,7 +91,7 @@ class Invert:
                         _sum = conjunction.buffer.sum()
                         _concept_fraction = min(_sum, N - _sum)/N
 
-                        if _concept_fraction > threshold:
+                        if _concept_fraction >= threshold:
                             top_formulas.append({"formula": conjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
@@ -103,7 +103,7 @@ class Invert:
                         _sum = disjunction.buffer.sum()
                         _concept_fraction = min(_sum, N - _sum)/N
 
-                        if _concept_fraction > threshold:
+                        if _concept_fraction >= threshold:
                             top_formulas.append({"formula": disjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
@@ -111,7 +111,6 @@ class Invert:
 
             top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
             top_formulas = top_formulas[:min(B, len(top_formulas))]
-            print(top_formulas)
 
             formula_length += 1
 
