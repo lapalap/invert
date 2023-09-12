@@ -4,7 +4,9 @@ import torch
 import pandas as pd
 import json
 
-df = pd.read_csv('/Users/kirillbykov/Documents/Work/DORA/notebooks/feature_extractor/theory/ILSVRC2012_val_labels.csv')
+# download image labes by following link 
+# https://www.dropbox.com/s/kpqdvkj03blales/ILSVRC2012_val_labels.csv?dl=0
+df = pd.read_csv('...')
 one_hot_labels = torch.tensor(df[df.columns[1:]].values)
 
 data = open('assets/imagenet/ILSVRC2012_classes.json')
@@ -18,8 +20,10 @@ explainer = Invert(
         storage_dir=".invert/",
         device="cpu",
     )
-
-explainer.load_activations(torch.load("/Users/kirillbykov/Documents/Work/INVERT/data/imagenet_val/features50k_densenet161_val.tnsr"),
+# download DenseNet activations by following link
+# https://www.dropbox.com/s/8fnjmanjounjrwj/features50k_densenet161_val.tnsr?dl=0
+A = torch.load("...")
+explainer.load_activations(A,
                            one_hot_labels,
                            data
                            )
