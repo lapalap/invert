@@ -203,12 +203,12 @@ class Invert:
             inverse_indices = inverse_indices[:buffer.shape[1]]
             print(inverse_indices)
             scores_buffer = scores_buffer[inverse_indices, :]
-            formulas = list(map(L.__getitem__, inverse_indices.tolist()))
+            formulas = list(map(formulas.__getitem__, inverse_indices.tolist()))
 
             top = torch.argsort(scores_buffer[:, 0], descending = True)[:B]
             buffer = buffer[:, top]
             scores_buffer = scores_buffer[top, :]
-            formulas = list(map(L.__getitem__, top.tolist()))
+            formulas = list(map(formulas.__getitem__, top.tolist()))
 
             formula_length += 1
 
