@@ -42,8 +42,8 @@ class Invert:
     def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict):
 
         # dict {i: 'name', 'description'}
-        self.A = A.clone()
-        self.Labels = Labels.clone()
+        self.A = A.clone().to(self.device)
+        self.Labels = Labels.clone().to(self.device)
 
         self.concepts = {}
         for i, k in enumerate(description):
@@ -136,7 +136,7 @@ class Invert:
         _k =self.Labels.shape[1] #number of concepts
 
         univariate_formulas = torch.cat((self.Labels == 1, torch.logical_not(self.Labels == 1)), dim = 1)
-        scores = torch.zeros([2*_k, 2]) # auc, fraction
+        scores = torch.zeros([2*_k, 2]).to(self.device) # auc, fraction
 
         # start beam search
         formula_length = 1
@@ -154,7 +154,7 @@ class Invert:
         print(top)
         top = top[scores[top, 1] >= threshold][:B]
 
-        buffer = univariate_formulas[:, top].clone()
+        buffer = univariate_formulas[:, top].clone().to(self.device)
         scores_buffer = scores[top, :]
         formulas = []
 
