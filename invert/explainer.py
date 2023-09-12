@@ -171,7 +171,7 @@ class Invert:
                 disjunction = torch.logical_or(buffer[:, [i]].repeat(1, 2*_k), univariate_formulas)
 
                 _all = torch.cat((conjunction, disjunction), dim = 1)
-                _scores = torch.zeros([_all.shape[1], 2]) # auc, fraction
+                _scores = torch.zeros([_all.shape[1], 2]).to(self.device) # auc, fraction
                 _scores[:, 0] = torchmetrics.functional.classification.multilabel_auroc(self.A[:, [r]].repeat([1, 4*_k]),
                                                                                          _all,
                                                                                          num_labels=_k*4,
