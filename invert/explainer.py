@@ -174,7 +174,7 @@ class Invert:
                                                             return_inverse=True,
                                                             dim = 1)
                 _n = _all.shape[1]
-                _scores = torch.zeros([n, 2]).to(self.device) # auc, fraction
+                _scores = torch.zeros([_n, 2]).to(self.device) # auc, fraction
                 _scores[:, 0] = torchmetrics.functional.classification.multilabel_auroc(self.A[:, [r]].repeat([1,_n]),
                                                                                          _all,
                                                                                          num_labels=_n,
