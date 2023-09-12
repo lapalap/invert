@@ -180,10 +180,10 @@ class Invert:
                 _scores[:, 1] = torch.min(_all.sum(axis = 0), N - _all.sum(axis = 0))/N
 
                 _top = torch.argsort(_scores[:, 0], descending = True)
-                _top = _top[(_scores[_top, 1] >= threshold ) * ((_all[:, _top].T != buffer[:, i].T).min(axis = 1).values)][:B]
+                _top = _top[(_scores[_top, 1] >= threshold ) * ((_all[:, _top].T != buffer[:, [i]].T).any(dim=1))][:B]
 
                 buffer = torch.cat((buffer, _all[:, _top]), dim = 1)
-                scores_buffer = torch.cat((buffer, _all[:, _top]), dim = 0)
+                scores_buffer = torch.cat((scores_buffer, _scores[_top, :]), dim = 0)
 
                 for j in _top.tolist():
                     if j // 2*_k == 0:
@@ -197,12 +197,13 @@ class Invert:
                         else:
                             formulas.append(formulas[i] |  ~self.concepts[i]['symbol'])
 
-            
-
-            buffer, inverse_indices = torch.unique(buffer,  return_inverse=True, dim = 0)
+            print(buffer.shape)
+            buffer, inverse_indices = torch.unique(buffer,  return_inverse=True, dim = 1)
+            print(buffer.shape)
             inverse_indices = inverse_indices[:buffer.shape[1]]
+            print(inverse_indices)
             scores_buffer = scores_buffer[inverse_indices, :]
-            formulas = formulas[inverse_indices]
+            formulas = formulas[inverse_indices.tolist()]
 
             top = torch.argsort(scores_buffer[:, 0], descending = True)[:B]
             buffer = buffer[:, top]
