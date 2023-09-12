@@ -170,22 +170,26 @@ class Invert:
                 conjunction = torch.logical_and(buffer[:, [i]].repeat(1, 2*_k), univariate_formulas)
                 disjunction = torch.logical_or(buffer[:, [i]].repeat(1, 2*_k), univariate_formulas)
 
-                _all = torch.cat((conjunction, disjunction), dim = 1)
-                _scores = torch.zeros([_all.shape[1], 2]).to(self.device) # auc, fraction
-                _scores[:, 0] = torchmetrics.functional.classification.multilabel_auroc(self.A[:, [r]].repeat([1, 4*_k]),
+                _all, _inverse_indices_all = torch.unique(torch.cat((conjunction, disjunction), dim = 1),
+                                                            return_inverse=True,
+                                                            dim = 1)
+                _n = _all.shape[1]
+                _scores = torch.zeros([n, 2]).to(self.device) # auc, fraction
+                _scores[:, 0] = torchmetrics.functional.classification.multilabel_auroc(self.A[:, [r]].repeat([1,_n]),
                                                                                          _all,
-                                                                                         num_labels=_k*4,
+                                                                                         num_labels=_n,
                                                                                          average=None,
                                                                                          thresholds=None)
                 _scores[:, 1] = torch.min(_all.sum(axis = 0), N - _all.sum(axis = 0))/N
 
                 _top = torch.argsort(_scores[:, 0], descending = True)
-                _top = _top[(_scores[_top, 1] >= threshold ) * ((_all[:, _top].T != buffer[:, [i]].T).any(dim=1))][:B]
+                _top = _top[_scores[_top, 1] >= threshold][:B]
 
                 buffer = torch.cat((buffer, _all[:, _top]), dim = 1)
                 scores_buffer = torch.cat((scores_buffer, _scores[_top, :]), dim = 0)
 
-                for j in _top.tolist():
+                for t in _top.tolist():
+                    j = _inverse_indices_all[t]
                     if j // 2*_k == 0:
                         if j // _k == 0:
                             formulas.append(formulas[i] & self.concepts[i]['symbol'])
