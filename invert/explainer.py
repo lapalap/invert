@@ -92,7 +92,7 @@ class Invert:
 
         formula_length = 2
         while formula_length <= L:
-            for i in tqdm(range(min(B, len(top_formulas)))):
+            for i in range(min(B, len(top_formulas))):
                 for j in range(len(univariate_formulas)):
                     conjunction = top_formulas[i]["formula"] & univariate_formulas[j]
                     if conjunction is not None:
