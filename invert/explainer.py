@@ -15,9 +15,7 @@ import sympy
 from tqdm import tqdm
 
 import torchmetrics
-
 warnings.simplefilter("default")
-# iou = JaccardIndex(num_classes=2)
 
 
 class Invert:
@@ -56,7 +54,8 @@ class Invert:
                                L: int,
                                B: int,
                                metric: Metric,
-                               threshold=0.):
+                               threshold=0.,
+                               memorize_states = False):
 
         N = self.A.shape[0]
 
@@ -86,6 +85,10 @@ class Invert:
             top_formulas, key=itemgetter("metric"), reverse=True)
         top_formulas = [
             formula for formula in top_formulas if formula['concept_fraction'] >= threshold][:B]
+        
+        if memorize_states:
+            states = {}
+            states['1'] = top_formulas.copy()
 
         formula_length = 2
         while formula_length <= L:
@@ -119,9 +122,13 @@ class Invert:
                 top_formulas, key=itemgetter("metric"), reverse=True)
             top_formulas = top_formulas[:min(B, len(top_formulas))]
 
+            if memorize_states:
+                states[str(formula_length)] = top_formulas.copy()
+
             formula_length += 1
 
-        # filter for threshold
+        if memorize_states:
+                return states
         return top_formulas
     
 
