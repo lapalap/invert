@@ -6,8 +6,8 @@ import torchvision
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-from phi import Phi
-from metrics import Metric
+from invert.phi import Phi
+from invert.metrics import Metric
 
 from operator import itemgetter
 import sympy
@@ -158,7 +158,6 @@ class Invert:
         scores[:, 1] = torch.min(univariate_formulas.sum(axis = 0), N - univariate_formulas.sum(axis = 0))/N
 
         top = torch.argsort(scores[:, 0], descending = True)
-        print(top)
         top = top[scores[top, 1] >= threshold][:B]
 
         buffer = univariate_formulas[:, top].clone().to(self.device)
@@ -167,13 +166,13 @@ class Invert:
 
         for i in top.tolist():
             if i // _k == 0:
-                formulas.append(self.concepts[i]['symbol'])
+                formulas.append(self.concepts[i % _k]['symbol'])
             else:
-                formulas.append(~self.concepts[i]['symbol'])
+                formulas.append(~self.concepts[i % _k]['symbol'])
 
         formula_length = 2
         while formula_length <= L:
-            for i in tqdm(range(min(B, buffer.shape[1]))):
+            for i in range(min(B, buffer.shape[1])):
                 conjunction = torch.logical_and(buffer[:, [i]].repeat(1, 2*_k), univariate_formulas)
                 disjunction = torch.logical_or(buffer[:, [i]].repeat(1, 2*_k), univariate_formulas)
 
@@ -196,23 +195,21 @@ class Invert:
                 scores_buffer = torch.cat((scores_buffer, _scores[_top, :]), dim = 0)
 
                 for t in _top.tolist():
-                    j = _inverse_indices_all[t]
+                    j = (_inverse_indices_all == t).nonzero()[0]
+                    index = j.item() % _k
                     if j // 2*_k == 0:
                         if j // _k == 0:
-                            formulas.append(formulas[i] & self.concepts[i]['symbol'])
+                            formulas.append(formulas[i] & self.concepts[index]['symbol'])
                         else:
-                            formulas.append(formulas[i] &  ~self.concepts[i]['symbol'])
+                            formulas.append(formulas[i] &  ~self.concepts[index]['symbol'])
                     else:
                         if j // _k == 2:
-                            formulas.append(formulas[i] | self.concepts[i]['symbol'])
+                            formulas.append(formulas[i] | self.concepts[index]['symbol'])
                         else:
-                            formulas.append(formulas[i] |  ~self.concepts[i]['symbol'])
+                            formulas.append(formulas[i] |  ~self.concepts[index]['symbol'])
 
-            print(buffer.shape)
             buffer, inverse_indices = torch.unique(buffer,  return_inverse=True, dim = 1)
-            print(buffer.shape)
             inverse_indices = inverse_indices[:buffer.shape[1]]
-            print(inverse_indices)
             scores_buffer = scores_buffer[inverse_indices, :]
             formulas = list(map(formulas.__getitem__, inverse_indices.tolist()))
 
@@ -223,13 +220,27 @@ class Invert:
 
             formula_length += 1
 
-        return formulas, scores_buffer
 
-    # def __check_unique(self, formula, top_formulas):
-    #     for i in top_formulas:
-    #         if torch.all(formula.buffer.eq(i["formula"].buffer)):
-    #             return False
-    #     return True
+        # output in standart format
+        output = []
+
+        for i, formula in enumerate(formulas):
+            phi_formula = Phi(expr= formula,
+                                   concepts=[self.concepts[k]['symbol']
+                                             for k in self.concepts],
+                                   concepts_to_indices={
+                                       self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
+                                   boolean=True,
+                                   device=self.device,
+                                   buffer=buffer[:, i])
+            
+            output.append({"formula": phi_formula,
+                         "length": phi_formula.info["n_distinct_concepts"],
+                         "metric": scores_buffer[i, 0],
+                         "concept_fraction": scores_buffer[i, 1]
+                         })
+
+        return output
 
     def __get_filenames_in_a_folder(self, folder: str):
         """
