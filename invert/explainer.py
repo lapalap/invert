@@ -43,11 +43,19 @@ class Invert:
         self.A = A.clone().to(self.device)
         self.Labels = Labels.clone().to(self.device)
 
+        # FOR IMAGENET
+        # self.concepts = {}
+        # for i, k in enumerate(description):
+        #     self.concepts[i] = description[k]
+        #     self.concepts[i]['symbol'] = sympy.Symbol(
+        #         self.concepts[i]['offset'])
+            
+        # FOR COCO
         self.concepts = {}
         for i, k in enumerate(description):
-            self.concepts[i] = description[k]
-            self.concepts[i]['symbol'] = sympy.Symbol(
-                self.concepts[i]['offset'])
+            self.concepts[i] = {'name' : description[k],
+                        'symbol' : sympy.Symbol(str(k))
+                        }
 
     def explain_representation(self,
                                r: int,
