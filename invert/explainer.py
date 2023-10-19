@@ -181,7 +181,7 @@ class Invert:
             states = {}
 
             output = []
-            for i, formula in enumerate(top):
+            for i, formula in enumerate(formulas):
                 phi_formula = Phi(expr= formula,
                                     concepts=[self.concepts[k]['symbol']
                                                 for k in self.concepts],
