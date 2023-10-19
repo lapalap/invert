@@ -6,8 +6,8 @@ import torchvision
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-from phi import Phi
-from metrics import Metric
+from .phi import Phi
+from .metrics import Metric
 
 from operator import itemgetter
 import sympy
@@ -139,7 +139,8 @@ class Invert:
                                metric: Metric,
                                min_fraction=0.,
                                max_fraction = 1.,
-                               mode = 'positive'):
+                               mode = 'positive',
+                               memorize_states = False):
 
         N = self.A.shape[0]
         _k =self.Labels.shape[1] #number of concepts
@@ -176,6 +177,28 @@ class Invert:
                 formulas.append(self.concepts[i % _k]['symbol'])
             else:
                 formulas.append(~self.concepts[i % _k]['symbol'])
+
+        if memorize_states:
+            states = {}
+
+            output = []
+            for i, formula in enumerate(top):
+                phi_formula = Phi(expr= formula,
+                                    concepts=[self.concepts[k]['symbol']
+                                                for k in self.concepts],
+                                    concepts_to_indices={
+                                        self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
+                                    boolean=True,
+                                    device=self.device,
+                                    buffer=buffer[:, i])
+                
+                output.append({"formula": phi_formula,
+                            "length": phi_formula.info["n_distinct_concepts"],
+                            "metric": scores_buffer[i, 0],
+                            "concept_fraction": scores_buffer[i, 1]
+                            })
+
+            states['1'] = output.copy()
 
         formula_length = 2
         while formula_length <= L:
@@ -232,6 +255,26 @@ class Invert:
             buffer = buffer[:, top]
             scores_buffer = scores_buffer[top, :]
             formulas = list(map(formulas.__getitem__, top.tolist()))
+
+            if memorize_states:
+                output = []
+                for i, formula in enumerate(formulas):
+                    phi_formula = Phi(expr= formula,
+                                        concepts=[self.concepts[k]['symbol']
+                                                    for k in self.concepts],
+                                        concepts_to_indices={
+                                            self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
+                                        boolean=True,
+                                        device=self.device,
+                                        buffer=buffer[:, i])
+                    
+                    output.append({"formula": phi_formula,
+                                "length": phi_formula.info["n_distinct_concepts"],
+                                "metric": scores_buffer[i, 0],
+                                "concept_fraction": scores_buffer[i, 1]
+                                })
+            
+                states[str(formula_length)] = output.copy()
 
             formula_length += 1
 
