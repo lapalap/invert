@@ -298,6 +298,8 @@ class Invert:
                          "concept_fraction": scores_buffer[i, 1]
                          })
 
+        if memorize_states:
+                return states
         return output
 
     def __get_filenames_in_a_folder(self, folder: str):
