@@ -39,7 +39,6 @@ class Invert:
 
     def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict):
 
-        # dict {i: 'name', 'description'}
         self.A = A.clone().to(self.device)
         self.Labels = Labels.clone().to(self.device)
 
@@ -243,10 +242,14 @@ class Invert:
                         else:
                             formulas.append(formulas[i] |  ~self.concepts[index]['symbol'])
 
-            buffer, inverse_indices = torch.unique(buffer,  return_inverse=True, dim = 1)
-            inverse_indices = inverse_indices[:buffer.shape[1]]
-            scores_buffer = scores_buffer[inverse_indices, :]
-            formulas = list(map(formulas.__getitem__, inverse_indices.tolist()))
+            buffer, inverse_indices, counts = torch.unique(buffer, sorted=True, return_inverse=True, return_counts=True, dim = 1)
+            #unique, idx, counts = torch.unique(A, dim=1, sorted=True, return_inverse=True, return_counts=True)
+            _, ind_sorted = torch.sort(inverse_indices, stable=True)
+            cum_sum = counts.cumsum(0)
+            cum_sum = torch.cat((torch.tensor([0]), cum_sum[:-1]))
+            first_indicies = ind_sorted[cum_sum]
+            scores_buffer = scores_buffer[first_indicies, :]
+            formulas = list(map(formulas.__getitem__, first_indicies.tolist()))
 
             if mode == 'positive':
                 top = torch.argsort(scores_buffer[:, 0], descending = True)[:B]
