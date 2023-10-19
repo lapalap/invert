@@ -48,12 +48,16 @@ class Invert:
             self.concepts[i]['symbol'] = sympy.Symbol(
                 self.concepts[i]['offset'])
 
+
+    #todo: fix that
     def explain_representation(self,
                                r: int,
                                L: int,
                                B: int,
                                metric: Metric,
-                               threshold=0.,
+                               min_fraction=0.,
+                               max_fraction=0.5,
+                               mode = 'positive',
                                memorize_states = False):
 
         N = self.A.shape[0]
@@ -78,12 +82,16 @@ class Invert:
         top_formulas = [{"formula": formula,
                          "length": formula_length,
                          "metric": metric(self.A[:, r], formula.buffer),
-                         "concept_fraction": min(formula.buffer.sum(), N - formula.buffer.sum())/N
+                         "concept_fraction": formula.buffer.sum()/N
                          } for formula in univariate_formulas]
-        top_formulas = sorted(
-            top_formulas, key=itemgetter("metric"), reverse=True)
+        
+        if mode == 'positive':
+            top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
+        elif mode == 'negative':
+            top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
+
         top_formulas = [
-            formula for formula in top_formulas if formula['concept_fraction'] >= threshold][:B]
+            formula for formula in top_formulas if (formula['concept_fraction'] <= max_fraction) & (formula['concept_fraction'] >= min_fraction)][:B]
         
         if memorize_states:
             states = {}
@@ -97,9 +105,9 @@ class Invert:
                     if conjunction is not None:
                         _metric = metric(self.A[:, r], conjunction.buffer)
                         _sum = conjunction.buffer.sum()
-                        _concept_fraction = min(_sum, N - _sum)/N
+                        _concept_fraction = _sum/N
 
-                        if _concept_fraction >= threshold:
+                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
                             top_formulas.append({"formula": conjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
@@ -109,16 +117,19 @@ class Invert:
                     if disjunction is not None:
                         _metric = metric(self.A[:, r], disjunction.buffer)
                         _sum = disjunction.buffer.sum()
-                        _concept_fraction = min(_sum, N - _sum)/N
+                        _concept_fraction = _sum/N
 
-                        if _concept_fraction >= threshold:
+                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
                             top_formulas.append({"formula": disjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
                                                  "concept_fraction": _concept_fraction})
+            
+            if mode == 'positive':
+                top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
+            elif mode == 'negative':
+                top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
 
-            top_formulas = sorted(
-                top_formulas, key=itemgetter("metric"), reverse=True)
             top_formulas = top_formulas[:min(B, len(top_formulas))]
 
             if memorize_states:
@@ -137,7 +148,7 @@ class Invert:
                                B: int,
                                metric: Metric,
                                min_fraction=0.,
-                               max_fraction = 1.,
+                               max_fraction = 0.5,
                                mode = 'positive',
                                memorize_states = False):
 
@@ -215,7 +226,6 @@ class Invert:
                                                                                          num_labels=_n,
                                                                                          average=None,
                                                                                          thresholds=None)
-                #_scores[:, 1] = torch.min(_all.sum(axis = 0), N - _all.sum(axis = 0))/N
                 _scores[:, 1] = _all.sum(axis = 0)/N
 
                 if mode == 'positive':
