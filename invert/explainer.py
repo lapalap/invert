@@ -145,7 +145,9 @@ class Invert:
                                L: int,
                                B: int,
                                metric: Metric,
-                               threshold=0.):
+                               min_fraction=0.,
+                               max_fraction = 1.,
+                               mode = 'positive'):
 
         N = self.A.shape[0]
         _k =self.Labels.shape[1] #number of concepts
@@ -163,11 +165,16 @@ class Invert:
                                                                                 num_labels=_k*2,
                                                                                 average=None,
                                                                                 thresholds=None)
-        scores[:, 1] = torch.min(univariate_formulas.sum(axis = 0), N - univariate_formulas.sum(axis = 0))/N
-
-        top = torch.argsort(scores[:, 0], descending = True)
-        top = top[scores[top, 1] >= threshold][:B]
-
+        #scores[:, 1] = torch.min(univariate_formulas.sum(axis = 0), N - univariate_formulas.sum(axis = 0))/N
+        scores[:, 1] = univariate_formulas.sum(axis = 0)/N
+        
+        if mode == 'positive':
+            top = torch.argsort(scores[:, 0], descending = True)
+        elif mode == 'negative':
+            top = torch.argsort(scores[:, 0], descending = False)
+        
+        top = top[(max_fraction >= scores[top, 1]) & (scores[top, 1] >= min_fraction)][:B]
+            
         buffer = univariate_formulas[:, top].clone().to(self.device)
         scores_buffer = scores[top, :]
         formulas = []
@@ -194,10 +201,15 @@ class Invert:
                                                                                          num_labels=_n,
                                                                                          average=None,
                                                                                          thresholds=None)
-                _scores[:, 1] = torch.min(_all.sum(axis = 0), N - _all.sum(axis = 0))/N
+                #_scores[:, 1] = torch.min(_all.sum(axis = 0), N - _all.sum(axis = 0))/N
+                _scores[:, 1] = _all.sum(axis = 0)/N
 
-                _top = torch.argsort(_scores[:, 0], descending = True)
-                _top = _top[_scores[_top, 1] >= threshold][:B]
+                if mode == 'positive':
+                    _top = torch.argsort(_scores[:, 0], descending = True)
+                elif mode == 'negative':
+                    _top = torch.argsort(_scores[:, 0], descending = False)
+                
+                _top = _top[(max_fraction >= _scores[_top, 1]) & (_scores[_top, 1]>= min_fraction)][:B]
 
                 buffer = torch.cat((buffer, _all[:, _top]), dim = 1)
                 scores_buffer = torch.cat((scores_buffer, _scores[_top, :]), dim = 0)
@@ -221,7 +233,10 @@ class Invert:
             scores_buffer = scores_buffer[inverse_indices, :]
             formulas = list(map(formulas.__getitem__, inverse_indices.tolist()))
 
-            top = torch.argsort(scores_buffer[:, 0], descending = True)[:B]
+            if mode == 'positive':
+                top = torch.argsort(scores_buffer[:, 0], descending = True)[:B]
+            elif mode == 'negative':
+                top = torch.argsort(scores_buffer[:, 0], descending = False)[:B]
             buffer = buffer[:, top]
             scores_buffer = scores_buffer[top, :]
             formulas = list(map(formulas.__getitem__, top.tolist()))
