@@ -6,8 +6,8 @@ import torchvision
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-from invert.phi import Phi
-from invert.metrics import Metric
+from .phi import Phi
+from .metrics import Metric
 
 from operator import itemgetter
 import sympy
@@ -39,7 +39,6 @@ class Invert:
 
     def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict):
 
-        # dict {i: 'name', 'description'}
         self.A = A.clone().to(self.device)
         self.Labels = Labels.clone().to(self.device)
 
@@ -57,12 +56,16 @@ class Invert:
                         'symbol' : sympy.Symbol(str(k))
                         }
 
+
+    #todo: fix that
     def explain_representation(self,
                                r: int,
                                L: int,
                                B: int,
                                metric: Metric,
-                               threshold=0.,
+                               min_fraction=0.,
+                               max_fraction=0.5,
+                               mode = 'positive',
                                memorize_states = False):
 
         N = self.A.shape[0]
@@ -87,12 +90,16 @@ class Invert:
         top_formulas = [{"formula": formula,
                          "length": formula_length,
                          "metric": metric(self.A[:, r], formula.buffer),
-                         "concept_fraction": min(formula.buffer.sum(), N - formula.buffer.sum())/N
+                         "concept_fraction": formula.buffer.sum()/N
                          } for formula in univariate_formulas]
-        top_formulas = sorted(
-            top_formulas, key=itemgetter("metric"), reverse=True)
+        
+        if mode == 'positive':
+            top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
+        elif mode == 'negative':
+            top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
+
         top_formulas = [
-            formula for formula in top_formulas if formula['concept_fraction'] >= threshold][:B]
+            formula for formula in top_formulas if (formula['concept_fraction'] <= max_fraction) & (formula['concept_fraction'] >= min_fraction)][:B]
         
         if memorize_states:
             states = {}
@@ -106,9 +113,9 @@ class Invert:
                     if conjunction is not None:
                         _metric = metric(self.A[:, r], conjunction.buffer)
                         _sum = conjunction.buffer.sum()
-                        _concept_fraction = min(_sum, N - _sum)/N
+                        _concept_fraction = _sum/N
 
-                        if _concept_fraction >= threshold:
+                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
                             top_formulas.append({"formula": conjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
@@ -118,16 +125,19 @@ class Invert:
                     if disjunction is not None:
                         _metric = metric(self.A[:, r], disjunction.buffer)
                         _sum = disjunction.buffer.sum()
-                        _concept_fraction = min(_sum, N - _sum)/N
+                        _concept_fraction = _sum/N
 
-                        if _concept_fraction >= threshold:
+                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
                             top_formulas.append({"formula": disjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
                                                  "concept_fraction": _concept_fraction})
+            
+            if mode == 'positive':
+                top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
+            elif mode == 'negative':
+                top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
 
-            top_formulas = sorted(
-                top_formulas, key=itemgetter("metric"), reverse=True)
             top_formulas = top_formulas[:min(B, len(top_formulas))]
 
             if memorize_states:
@@ -146,8 +156,9 @@ class Invert:
                                B: int,
                                metric: Metric,
                                min_fraction=0.,
-                               max_fraction = 1.,
-                               mode = 'positive'):
+                               max_fraction = 0.5,
+                               mode = 'positive',
+                               memorize_states = False):
 
         N = self.A.shape[0]
         _k =self.Labels.shape[1] #number of concepts
@@ -185,6 +196,28 @@ class Invert:
             else:
                 formulas.append(~self.concepts[i % _k]['symbol'])
 
+        if memorize_states:
+            states = {}
+
+            output = []
+            for i, formula in enumerate(formulas):
+                phi_formula = Phi(expr= formula,
+                                    concepts=[self.concepts[k]['symbol']
+                                                for k in self.concepts],
+                                    concepts_to_indices={
+                                        self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
+                                    boolean=True,
+                                    device=self.device,
+                                    buffer=buffer[:, i])
+                
+                output.append({"formula": phi_formula,
+                            "length": phi_formula.info["n_distinct_concepts"],
+                            "metric": scores_buffer[i, 0],
+                            "concept_fraction": scores_buffer[i, 1]
+                            })
+
+            states['1'] = output.copy()
+
         formula_length = 2
         while formula_length <= L:
             for i in range(min(B, buffer.shape[1])):
@@ -201,7 +234,6 @@ class Invert:
                                                                                          num_labels=_n,
                                                                                          average=None,
                                                                                          thresholds=None)
-                #_scores[:, 1] = torch.min(_all.sum(axis = 0), N - _all.sum(axis = 0))/N
                 _scores[:, 1] = _all.sum(axis = 0)/N
 
                 if mode == 'positive':
@@ -228,10 +260,14 @@ class Invert:
                         else:
                             formulas.append(formulas[i] |  ~self.concepts[index]['symbol'])
 
-            buffer, inverse_indices = torch.unique(buffer,  return_inverse=True, dim = 1)
-            inverse_indices = inverse_indices[:buffer.shape[1]]
-            scores_buffer = scores_buffer[inverse_indices, :]
-            formulas = list(map(formulas.__getitem__, inverse_indices.tolist()))
+            buffer, inverse_indices, counts = torch.unique(buffer, sorted=True, return_inverse=True, return_counts=True, dim = 1)
+            #unique, idx, counts = torch.unique(A, dim=1, sorted=True, return_inverse=True, return_counts=True)
+            _, ind_sorted = torch.sort(inverse_indices, stable=True)
+            cum_sum = counts.cumsum(0)
+            cum_sum = torch.cat((torch.tensor([0]), cum_sum[:-1]))
+            first_indicies = ind_sorted[cum_sum]
+            scores_buffer = scores_buffer[first_indicies, :]
+            formulas = list(map(formulas.__getitem__, first_indicies.tolist()))
 
             if mode == 'positive':
                 top = torch.argsort(scores_buffer[:, 0], descending = True)[:B]
@@ -240,6 +276,26 @@ class Invert:
             buffer = buffer[:, top]
             scores_buffer = scores_buffer[top, :]
             formulas = list(map(formulas.__getitem__, top.tolist()))
+
+            if memorize_states:
+                output = []
+                for i, formula in enumerate(formulas):
+                    phi_formula = Phi(expr= formula,
+                                        concepts=[self.concepts[k]['symbol']
+                                                    for k in self.concepts],
+                                        concepts_to_indices={
+                                            self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
+                                        boolean=True,
+                                        device=self.device,
+                                        buffer=buffer[:, i])
+                    
+                    output.append({"formula": phi_formula,
+                                "length": phi_formula.info["n_distinct_concepts"],
+                                "metric": scores_buffer[i, 0],
+                                "concept_fraction": scores_buffer[i, 1]
+                                })
+            
+                states[str(formula_length)] = output.copy()
 
             formula_length += 1
 
@@ -263,6 +319,8 @@ class Invert:
                          "concept_fraction": scores_buffer[i, 1]
                          })
 
+        if memorize_states:
+                return states
         return output
 
     def __get_filenames_in_a_folder(self, folder: str):
