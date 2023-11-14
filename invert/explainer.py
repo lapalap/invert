@@ -44,13 +44,13 @@ class Invert:
             self.concepts = {}
             for i, k in enumerate(description):
                 self.concepts[i] = description[k]
-                self.concepts[i]['symbol'] = sympy.Symbol(
-                    self.concepts[i]['offset'])
+                self.concepts[i]["symbol"] = sympy.Symbol(
+                    self.concepts[i]["offset"])
         elif self.dataset == "coco":
             self.concepts = {}
             for i, k in enumerate(description):
-                self.concepts[i] = {'name' : description[k],
-                            'symbol' : sympy.Symbol(str(k))
+                self.concepts[i] = {"name" : description[k],
+                            "symbol" : sympy.Symbol(str(k))
                             }
 
     def explain_representation(self,
@@ -60,17 +60,17 @@ class Invert:
                                metric: Metric,
                                min_fraction=0.,
                                max_fraction=0.5,
-                               mode = 'positive',
+                               mode = "positive",
                                memorize_states = False):
 
         N = self.A.shape[0]
 
         # creating set of concepts
-        univariate_formulas = [Phi(expr=self.concepts[i]['symbol'],
-                                   concepts=[self.concepts[k]['symbol']
+        univariate_formulas = [Phi(expr=self.concepts[i]["symbol"],
+                                   concepts=[self.concepts[k]["symbol"]
                                              for k in self.concepts],
                                    concepts_to_indices={
-                                       self.concepts[key]['name']: i for i, key in enumerate(self.concepts)},
+                                       self.concepts[key]["name"]: i for i, key in enumerate(self.concepts)},
                                    boolean=True,
                                    device=self.device,
                                    buffer=(self.Labels[:, i] == 1).to(self.device)) for i in range(len(self.concepts))]
@@ -88,17 +88,17 @@ class Invert:
                          "concept_fraction": formula.buffer.sum()/N
                          } for formula in univariate_formulas]
         
-        if mode == 'positive':
+        if mode == "positive":
             top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
-        elif mode == 'negative':
+        elif mode == "negative":
             top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
 
         top_formulas = [
-            formula for formula in top_formulas if (formula['concept_fraction'] <= max_fraction) & (formula['concept_fraction'] >= min_fraction)][:B]
+            formula for formula in top_formulas if (formula["concept_fraction"] <= max_fraction) & (formula["concept_fraction"] >= min_fraction)][:B]
         
         if memorize_states:
             states = {}
-            states['1'] = top_formulas.copy()
+            states["1"] = top_formulas.copy()
 
         formula_length = 2
         while formula_length <= L:
@@ -128,9 +128,9 @@ class Invert:
                                                  "metric": _metric,
                                                  "concept_fraction": _concept_fraction})
             
-            if mode == 'positive':
+            if mode == "positive":
                 top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
-            elif mode == 'negative':
+            elif mode == "negative":
                 top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
 
             top_formulas = top_formulas[:min(B, len(top_formulas))]
