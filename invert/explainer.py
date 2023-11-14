@@ -6,8 +6,8 @@ import torchvision
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-from .phi import Phi
-from .metrics import Metric
+from invert.phi import Phi
+from invert.metrics import Metric
 
 from operator import itemgetter
 import sympy
@@ -21,7 +21,6 @@ warnings.simplefilter("default")
 class Invert:
     def __init__(
         self,
-        F: torch.nn.Module,
         storage_dir=".invert/",
         device="cpu",
     ):
@@ -29,32 +28,30 @@ class Invert:
 
         self.device = device
 
-        self.F = F
-
         if storage_dir[-1] == "/":
             storage_dir = storage_dir[:-1]
 
         self.storage_dir = storage_dir
         self.make_folder_if_it_doesnt_exist(name=storage_dir)
 
-    def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict):
+    def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict, dataset: str):
 
         self.A = A.clone().to(self.device)
         self.Labels = Labels.clone().to(self.device)
+        self.dataset = dataset
 
-        # FOR IMAGENET
-        # self.concepts = {}
-        # for i, k in enumerate(description):
-        #     self.concepts[i] = description[k]
-        #     self.concepts[i]['symbol'] = sympy.Symbol(
-        #         self.concepts[i]['offset'])
-            
-        # FOR COCO
-        self.concepts = {}
-        for i, k in enumerate(description):
-            self.concepts[i] = {'name' : description[k],
-                        'symbol' : sympy.Symbol(str(k))
-                        }
+        if self.dataset == "imagenet":
+            self.concepts = {}
+            for i, k in enumerate(description):
+                self.concepts[i] = description[k]
+                self.concepts[i]['symbol'] = sympy.Symbol(
+                    self.concepts[i]['offset'])
+        elif self.dataset == "coco":
+            self.concepts = {}
+            for i, k in enumerate(description):
+                self.concepts[i] = {'name' : description[k],
+                            'symbol' : sympy.Symbol(str(k))
+                            }
 
     def explain_representation(self,
                                r: int,
