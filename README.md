@@ -12,7 +12,7 @@
 </div>
 
 <div align="left">
-<img src="./assets/images/about.svg" height="32"/>
+<img src="./assets/images/about.svg" height="40"/>
 </div>
 <hr />
 
@@ -31,7 +31,7 @@ With DORA user can investigate networks for presence of artifactual representati
 </div>
 
 <div align="left">
-<img src="./assets/images/Installation.svg" height="32"/>
+<img src="./assets/images/Installation.svg" height="40"/>
 </div>
 <hr />
 
@@ -89,7 +89,7 @@ d.generate_signals(
 
 
 <div align="left">
-<img src="./assets/images/citation.svg" height="32"/>
+<img src="./assets/images/citation.svg" height="40"/>
 </div>
 <hr />
 
