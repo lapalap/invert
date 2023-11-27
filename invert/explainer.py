@@ -24,8 +24,6 @@ class Invert:
         storage_dir=".invert/",
         device="cpu",
     ):
-        # TODO: fix description
-
         self.device = device
 
         if storage_dir[-1] == "/":

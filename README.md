@@ -1,24 +1,18 @@
 <div align="center">
-  <img src="./assets/images/logo.svg" width="600"/>
+  <img src="./assets/images/logo.svg" width="400"/>
 </div>
 
 <div align="center"><h1>Labeling Neural Representations with Inverse Recognition</h1>
-<h5>A toolkit to explore the Representation Spaces of Deep Neural Networks</h5>
+<h5>The toolkit to explore the Representation Spaces of Deep Neural Networks</h5>
 <h6>PyTorch version</h6>
-<h5 href="https://arxiv.org/abs/2206.04530">Paper link</h5></div>
+<h5 href="https://arxiv.org/abs/2311.13594">Paper link</h5></div>
 <div align="center">
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lapalap/dora/blob/dev/examples/hello_dora.ipynb)
-[![tests](https://github.com/lapalap/dora/actions/workflows/main.yml/badge.svg)](https://github.com/lapalap/dora/actions/workflows/main.yml)
-[![codecov](https://codecov.io/gh/lapalap/dora/branch/dev/graph/badge.svg?token=UQ3QSHKSNR)](https://codecov.io/gh/lapalap/dora)
-[![Dependencies Status](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/lapalap/dora/pulls?utf8=%E2%9C%93&q=is%3Apr%20author%3Aapp%2Fdependabot)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![License](https://img.shields.io/github/license/lapalap/dora)](https://github.com/lapalap/dora/blob/master/LICENSE)
-
 </div>
 
 <div align="left">
-<img src="./assets/images/About.svg" height="32"/>
+<img src="./assets/images/about.svg" height="32"/>
 </div>
 <hr />
 
@@ -47,7 +41,7 @@ pip install git+https://github.com/lapalap/dora.git
 ```
 
 <div align="left">
-<img src="./assets/images/Getting%20started.svg" height="32"/>
+<img src="./assets/images/gettingstarted.svg" height="32"/>
 </div>
 <hr />
 
@@ -95,22 +89,15 @@ d.generate_signals(
 
 
 <div align="left">
-<img src="./assets/images/Citation.svg" height="32"/>
+<img src="./assets/images/citation.svg" height="32"/>
 </div>
 <hr />
 
 ```bibtex
-@article{bykov2022dora,
-  title={DORA: Exploring outlier representations in Deep Neural Networks},
-  author={Bykov, Kirill and Deb, Mayukh and Grinwald, Dennis and M{\"u}ller, Klaus-Robert and H{\"o}hne, Marina M-C},
-  journal={arXiv preprint arXiv:2206.04530},
-  year={2022}
+@article{bykov2023labeling,
+  title={Labeling Neural Representations with Inverse Recognition},
+  author={Bykov, Kirill and Kopf, Laura and Nakajima, Shinichi and Kloft, Marius and H{\"o}hne, Marina M-C},
+  journal={arXiv preprint arXiv:2311.13594},
+  year={2023}
 }
 ```
-
-<div align="left">
-<img src="./assets/images/License.svg" height="32"/>
-</div>
-<hr />
-
-This project is licensed under the terms of the `MIT` license. See [LICENSE](https://github.com/lapalap/dora/blob/master/LICENSE) for more details.
