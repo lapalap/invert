@@ -1,0 +1,8 @@
+torch
+tqdm
+torchmetrics
+sympy
+cv2
+torchvision
+PIL
+pycocotools
