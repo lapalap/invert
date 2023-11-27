@@ -16,7 +16,9 @@
 </div>
 <hr />
 
+<div align="center">
 Inverse Recognition (INVERT) is a method designed to enhance our understanding of the representations learned by Deep Neural Networks (DNNs). It aims to bridge the gap between these complex, hierarchical data representations and human-understandable concepts. Unlike existing global explainability methods, INVERT is more scalable and less reliant on resources such as segmentation masks. It also offers an interpretable metric that measures the alignment between the representation and its explanation, providing a degree of statistical significance.
+</div>
 
 <div align="center">
 <img src="./assets/images/invert.svg" height="350"/>
