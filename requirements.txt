@@ -2,7 +2,7 @@ torch
 tqdm
 torchmetrics
 sympy
-cv2
+opencv-python
 torchvision
 PIL
 pycocotools
