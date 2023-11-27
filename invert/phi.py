@@ -10,9 +10,7 @@ class Phi:
             concepts_to_indices: dict,
             boolean: bool,
             device,
-            buffer: torch.Tensor = None,
-            description: str = "",
-            compute_graph = False
+            buffer: torch.Tensor = None
     ):
 
         """
@@ -138,14 +136,6 @@ class Phi:
             index = self.concepts_to_indices[str(distinct_concept)]
             return X[..., index]
 
-    def __str__(self):
-        """
-        Used for printing the explanation
-
-        :return:
-        """
-        return "Phi"
-
     def __repr__(self):
         """
         Used for printing the explanation
@@ -153,6 +143,10 @@ class Phi:
         :return:
         """
         return self.expr.__str__()
+    
+    def describe(self, concept_description: dict):
+         self.info["str"]
+
 
 # #### PHI EXAMPLE START #####
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -172,60 +166,3 @@ class Phi:
 #     device=device,
 # )
 # print(phi.info)
-
-# class ExplanationSet:
-#     def __init__(
-#             self,
-#             explanations: list,
-#             concepts: list,
-#             concepts_to_indices: dict,
-#             boolean: bool,
-#             device,
-#     ):
-#         """
-
-#         :param explanations:
-#         :param concepts:
-#         :param concepts_to_indices:
-#         :param boolean:
-#         :param device:
-#         """
-#         self.explanations = explanations
-#         self.concepts = concepts
-#         # TODO: write code to check if concepts are the same for all Phi's
-#         self.concepts_to_indices = concepts_to_indices
-#         self.boolean = boolean
-#         self.device = device
-
-#         self.model = None
-
-#     def link_model(self):
-#         """
-#         Function to create a Pytorch model for explanations
-
-#         :return:
-#         """
-#         # self.negation_layer = torch.nn.Linear(len(self.concepts),
-#         #                                       len(self.explanations) * len(self.concepts),
-#         #                                       bias=False
-#         # ).to(self.device)
-#         #
-#         # n_disjunction_terms = 0.
-#         # for phi in self.explanations:
-#         #     n_disjunction_terms += self.info["n_disjunction_terms"]
-#         #
-#         # self.disjunction_layer = torch.nn.Linear(len(self.explanations) * len(self.concepts),
-#         #                                          self.info["n_disjunction_terms"], bias=False
-#         # ).to(device)
-#         # self.disjunction_layer.weight = torch.nn.Parameter(
-#         #     torch.zeros_like(self.disjunction_layer.weight)
-#         # )
-#         # self.negation_indices = torch.zeros(self.info["n_concepts"]).to(device)
-#         raise NotImplementedError
-
-#     def __call__(self, X: torch.Tensor):
-        if self.model is None:
-            # TODO: nice error message
-            raise NotImplementedError
-        else:
-            raise NotImplementedError
