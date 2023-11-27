@@ -4,5 +4,5 @@ torchmetrics
 sympy
 opencv-python
 torchvision
-PIL
+Pillow
 pycocotools
