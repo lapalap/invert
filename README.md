@@ -23,7 +23,7 @@
 Inverse Recognition (INVERT) is a method designed to enhance our understanding of the representations learned by Deep Neural Networks (DNNs). It aims to bridge the gap between these complex, hierarchical data representations and human-understandable concepts. Unlike existing global explainability methods, INVERT is more scalable and less reliant on resources such as segmentation masks. It also offers an interpretable metric that measures the alignment between the representation and its explanation, providing a degree of statistical significance.
 </div>
 
-
+<br> 
 <div align="center">
 <img src="./assets/images/installation.svg" height="40"/>
 </div>
@@ -34,7 +34,7 @@ You can it via pip as shown below:
 ! git clone https://github.com/lapalap/invert.git --quiet
 ! pip install git+file:///content/invert --quiet
 ```
-
+<br> 
 <div align="center">
 <img src="./assets/images/gettingstarted.svg" height="32"/>
 </div>
@@ -42,6 +42,7 @@ You can it via pip as shown below:
 
 You can get started with the following [colab notebook](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb).
 
+<br> 
 <div align="center">
 <img src="./assets/images/citation.svg" height="40"/>
 </div>
