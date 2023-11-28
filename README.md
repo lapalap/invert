@@ -13,7 +13,6 @@
 <div align="center">
 <img src="./assets/images/about.svg" height="40"/>
 </div>
-<hr />
 
 <div align="center">
 <img src="./assets/images/invert.svg" height="200"/>
@@ -27,7 +26,6 @@ Inverse Recognition (INVERT) is a method designed to enhance our understanding o
 <div align="center">
 <img src="./assets/images/installation.svg" height="40"/>
 </div>
-<hr />
 
 You can it via pip as shown below:
 ```
@@ -36,9 +34,8 @@ You can it via pip as shown below:
 ```
 <br> 
 <div align="center">
-<img src="./assets/images/gettingstarted.svg" height="32"/>
+<img src="./assets/images/gettingstarted.svg" height="40"/>
 </div>
-<hr />
 
 You can get started with the following [colab notebook](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb).
 
@@ -46,7 +43,6 @@ You can get started with the following [colab notebook](https://colab.research.g
 <div align="center">
 <img src="./assets/images/citation.svg" height="40"/>
 </div>
-<hr />
 
 ```bibtex
 @article{bykov2023labeling,
