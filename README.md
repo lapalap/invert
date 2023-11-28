@@ -11,7 +11,7 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb)
 </div>
 
-<div align="left">
+<div align="center">
 <img src="./assets/images/about.svg" height="40"/>
 </div>
 <hr />
@@ -21,7 +21,7 @@ Inverse Recognition (INVERT) is a method designed to enhance our understanding o
 </div>
 
 <div align="center">
-<img src="./assets/images/invert.svg" height="350"/>
+<img src="./assets/images/invert.svg" height="200"/>
 </div>
 
 With DORA user can investigate networks for presence of artifactual representations. As an example, DORA was able to found cluster of unintended (spurious) Chinese-character detector in representations from standard ImageNet trained networks.
@@ -30,7 +30,7 @@ With DORA user can investigate networks for presence of artifactual representati
 <img src="./assets/images/example.png" height="550"/>
 </div>
 
-<div align="left">
+<div align="center">
 <img src="./assets/images/Installation.svg" height="40"/>
 </div>
 <hr />
@@ -40,7 +40,7 @@ You can it via pip as shown below:
 pip install git+https://github.com/lapalap/dora.git
 ```
 
-<div align="left">
+<div align="center">
 <img src="./assets/images/gettingstarted.svg" height="32"/>
 </div>
 <hr />
@@ -88,7 +88,7 @@ d.generate_signals(
 ```
 
 
-<div align="left">
+<div align="center">
 <img src="./assets/images/citation.svg" height="40"/>
 </div>
 <hr />

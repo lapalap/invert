@@ -13,6 +13,8 @@ import sympy
 
 from tqdm import tqdm
 
+from scipy.stats import mannwhitneyu
+
 import torchmetrics
 warnings.simplefilter("default")
 
@@ -167,3 +169,10 @@ class Invert:
 
     def get_activations(self):
         raise NotImplementedError
+    
+    def get_p_value(self, r: int, explanation: Phi, alternative='two-sided'):
+        U1, p = mannwhitneyu(self.A[explanation.buffer.cpu() == 0, r], A[explanation.buffer.cpu() == 1, r],
+                             alternative = alternative)
+
+        return p
+        
