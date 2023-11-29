@@ -5,9 +5,10 @@
 <div align="center"><h1>Labeling Neural Representations with Inverse Recognition</h1>
 <h6>Accepted at 37th Conference on Neural Information Processing Systems (NeurIPS 2023)</h6>
 <a href="https://arxiv.org/abs/2311.13594">Paper link</a>
-<div align="center">
-
+<br> 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb)
+<hr />
+<br> 
 </div>
 
 <div align="center">
