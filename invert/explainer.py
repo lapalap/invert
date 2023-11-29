@@ -171,7 +171,7 @@ class Invert:
         raise NotImplementedError
     
     def get_p_value(self, r: int, explanation: Phi, alternative='two-sided'):
-        U1, p = mannwhitneyu(self.A[explanation.buffer.cpu() == 0, r], self.A[explanation.buffer.cpu() == 1, r],
+        U1, p = mannwhitneyu(self.A[explanation.buffer.cpu() == 0, r].cpu(), self.A[explanation.buffer.cpu() == 1, r].cpu(),
                              alternative = alternative)
 
         return p
