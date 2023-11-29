@@ -5,7 +5,7 @@
 <div align="center"><h1>Labeling Neural Representations with Inverse Recognition</h1>
 <h6>Accepted at 37th Conference on Neural Information Processing Systems (NeurIPS 2023)</h6>
 <a href="https://arxiv.org/abs/2311.13594">Paper link</a>
-<br> 
+<br>
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb)
 <hr />
 <br> 
@@ -14,6 +14,7 @@
 <div align="center">
 <img src="./assets/images/about.svg" height="40"/>
 </div>
+<br>
 
 <div align="center">
 <img src="./assets/images/invert.svg" height="200"/>
@@ -27,6 +28,7 @@ Inverse Recognition (INVERT) is a method designed to enhance our understanding o
 <div align="center">
 <img src="./assets/images/installation.svg" height="40"/>
 </div>
+<br> 
 
 You can it via pip as shown below:
 ```
@@ -37,6 +39,7 @@ You can it via pip as shown below:
 <div align="center">
 <img src="./assets/images/gettingstarted.svg" height="40"/>
 </div>
+<br> 
 
 You can get started with the following [colab notebook](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb).
 
@@ -44,6 +47,7 @@ You can get started with the following [colab notebook](https://colab.research.g
 <div align="center">
 <img src="./assets/images/citation.svg" height="40"/>
 </div>
+<br> 
 
 ```bibtex
 @article{bykov2023labeling,
