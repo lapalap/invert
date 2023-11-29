@@ -5,7 +5,6 @@
 <div align="center"><h1>Labeling Neural Representations with Inverse Recognition</h1>
 <h6>Accepted at 37th Conference on Neural Information Processing Systems (NeurIPS 2023)</h6>
 <a href="https://arxiv.org/abs/2311.13594">Paper link</a>
-<br>
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lapalap/invert/blob/main/hello_invert.ipynb)
 <hr />
 <br> 
@@ -19,6 +18,7 @@
 <div align="center">
 <img src="./assets/images/invert.svg" height="200"/>
 </div>
+<br>
 
 <div align="center">
 Inverse Recognition (INVERT) is a method designed to enhance our understanding of the representations learned by Deep Neural Networks (DNNs). It aims to bridge the gap between these complex, hierarchical data representations and human-understandable concepts. Unlike existing global explainability methods, INVERT is more scalable and less reliant on resources such as segmentation masks. It also offers an interpretable metric that measures the alignment between the representation and its explanation, providing a degree of statistical significance.
