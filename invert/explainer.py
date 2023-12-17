@@ -36,7 +36,7 @@ class Invert:
     def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict, dataset: str):
 
         self.A = A.to(self.device)
-        self.Labels = Labels.clone().to(self.device)
+        self.Labels = Labels.to(self.device)
         self.dataset = dataset
 
         if self.dataset == "imagenet":
