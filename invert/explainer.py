@@ -11,11 +11,10 @@ from invert.metrics import Metric
 from operator import itemgetter
 import sympy
 
-from tqdm import tqdm
+import json
 
 from scipy.stats import mannwhitneyu
 
-import torchmetrics
 warnings.simplefilter("default")
 
 
@@ -43,14 +42,141 @@ class Invert:
             self.concepts = {}
             for i, k in enumerate(description):
                 self.concepts[i] = description[k]
-                self.concepts[i]["symbol"] = sympy.Symbol(
+                self.concepts[i]["symbol"] = sympy.symbols(
                     self.concepts[i]["offset"])
         elif self.dataset == "coco":
             self.concepts = {}
             for i, k in enumerate(description):
                 self.concepts[i] = {"name" : description[k],
-                            "symbol" : sympy.Symbol(str(k))
+                            "symbol" : sympy.symbols(str(k))
                             }
+                
+    def load_concept_labels(self,
+                             labels_path: str,
+                             num_samples: int,
+                             num_concepts: int,
+                             description_path: str,
+                             dataset = "imagenet"):
+        
+        self.labels = torch.load(labels_path).to(self.device)
+        # WIP: not working
+        # self.labels = torch.BoolTensor(torch.BoolStorage.from_file(labels_path,
+        #                                                             shared=True,
+        #                                                             size=[num_samples, num_concepts])).reshape(num_samples,
+        #                                                                                                     num_concepts)
+        self.num_samples = num_samples
+        self.num_concepts = num_concepts
+        with open(description_path, 'r') as fp:
+            self.description  = json.load(fp)
+
+        self.concepts = [sympy.Symbol(self.description[k]["offset"]) for k in self.description]
+        
+        #big one
+        self.memdict = {concept.name :self.labels[:, i] for i,concept in enumerate(self.concepts)}
+
+                
+    def explain_representation_test(self,
+                               A: torch.Tensor,
+                               L: int,
+                               B: int,
+                               metric: Metric,
+                               limit_search = None,
+                               min_fraction=0.,
+                               max_fraction=0.5,
+                               mode = "positive",
+                               memorize_states = False):
+        # start beam search
+        formula_length = 1
+        # evaluate_univariate formulas and take best beam_search_size
+        ATOMIC_CONCEPTS = []
+        for i in range(2*self.num_concepts):
+            q = i % self.num_concepts
+            if i // self.num_concepts == 0:
+                formula = Phi(expr=self.concepts[q],
+                              device = self.device)
+                buffer = self.memdict[self.concepts[q].name]
+            else:
+                formula = Phi(expr=~self.concepts[q],
+                              device = self.device)
+                buffer = ~self.memdict[self.concepts[q].name]
+
+            concept_fraction = buffer.sum()/self.num_samples
+
+            ATOMIC_CONCEPTS.append({"formula": formula,
+                         "length": formula_length,
+                         "metric": metric(A, buffer),
+                         "concept_fraction": concept_fraction})
+        
+        if mode == "positive":
+            ATOMIC_CONCEPTS = sorted(ATOMIC_CONCEPTS, key=itemgetter("metric"), reverse=True)
+        elif mode == "negative":
+            ATOMIC_CONCEPTS = sorted(ATOMIC_CONCEPTS, key=itemgetter("metric"), reverse=False)
+
+        if limit_search is None:
+            limit_search = len(ATOMIC_CONCEPTS)
+
+        BEAM = [
+            formula for formula in ATOMIC_CONCEPTS if (formula["concept_fraction"] <= max_fraction) & (formula["concept_fraction"] >= min_fraction)][:B]
+
+        if memorize_states:
+            states = {}
+            states["1"] = BEAM.copy()
+
+        formula_length = 2
+
+        while formula_length <= L:
+            for i in range(min(B, len(BEAM))):
+                for j in range(limit_search):
+                    conjunction = BEAM[i]["formula"] & ATOMIC_CONCEPTS[j]["formula"]
+                    if conjunction is not None:
+                        _formula_buffer = conjunction(self.memdict)
+                        _metric = metric(A, _formula_buffer)
+                        _concept_fraction = _formula_buffer.sum()/self.num_samples
+
+                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
+                            BEAM.append({"formula": conjunction,
+                                                 "length": formula_length,
+                                                 "metric": _metric,
+                                                 "concept_fraction": _concept_fraction})
+
+                    disjunction = BEAM[i]["formula"] | ATOMIC_CONCEPTS[j]["formula"]
+                    if disjunction is not None:
+                        _formula_buffer = disjunction(self.memdict)
+                        _metric = metric(A, _formula_buffer)
+                        _concept_fraction = _formula_buffer.sum()/self.num_samples
+
+                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
+                            BEAM.append({"formula": disjunction,
+                                                 "length": formula_length,
+                                                 "metric": _metric,
+                                                 "concept_fraction": _concept_fraction})
+            
+            if mode == "positive":
+                BEAM = sorted(BEAM, key=itemgetter("metric"), reverse=True)
+            elif mode == "negative":
+                BEAM = sorted(BEAM, key=itemgetter("metric"), reverse=False)
+
+            BEAM = BEAM[:min(B, len(BEAM))]
+
+            if memorize_states:
+                states[str(formula_length)] = BEAM.copy()
+
+            formula_length += 1
+
+        if memorize_states:
+                return states
+        return BEAM
+
+
+
+
+
+
+
+
+
+        pass
+        
 
     def explain_representation(self,
                                r: int,
