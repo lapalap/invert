@@ -1,6 +1,8 @@
 import os
 import warnings
 
+from tqdm import tqdm
+
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -106,7 +108,7 @@ class Invert:
         formula_length = 2
 
         while formula_length <= L:
-            for i in range(min(B, len(BEAM))):
+            for i in tqdm(range(min(B, len(BEAM)))):
                 for j in range(limit_search):
                     conjunction = BEAM[i]["formula"] & ATOMIC_CONCEPTS[j]["formula"]
                     if conjunction is not None:
