@@ -32,7 +32,7 @@ class Invert:
                              num_concepts: int,
                              description_path: str):
         
-        self.labels = torch.load(labels_path)                                                                               num_concepts)
+        self.labels = torch.load(labels_path)
         self.num_samples = num_samples
         self.num_concepts = num_concepts
         with open(description_path, 'r') as fp:
