@@ -60,8 +60,9 @@ class Phi:
         # )  # expression itself
         self.expr = expr
         self._distinct_concepts = self.expr.free_symbols
+        self.device = device
         self._pytorch_expr = sympytorch.SymPyModule(expressions=[self.expr],
-                                                    extra_funcs=_updated_func_lookup).to(device)
+                                            extra_funcs=_updated_func_lookup).to(self.device)
 
     def __call__(self, memdict: dict) -> torch.tensor:
         # for binary labels
