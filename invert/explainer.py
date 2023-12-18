@@ -60,7 +60,7 @@ class Invert:
         formula_length = 1
         # evaluate_univariate formulas and take best beam_search_size
         ATOMIC_CONCEPTS = []
-        for i in range(2*self.num_concepts):
+        for i in tqdm(range(2*self.num_concepts)):
             q = i % self.num_concepts
             if i // self.num_concepts == 0:
                 formula = Phi(expr=self.concepts[q],
