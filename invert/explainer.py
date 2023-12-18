@@ -33,12 +33,7 @@ class Invert:
                              description_path: str,
                              dataset = "imagenet"):
         
-        self.labels = torch.load(labels_path).to(self.device)
-        # WIP: not working
-        # self.labels = torch.BoolTensor(torch.BoolStorage.from_file(labels_path,
-        #                                                             shared=True,
-        #                                                             size=[num_samples, num_concepts])).reshape(num_samples,
-        #                                                                                                     num_concepts)
+        self.labels = torch.load(labels_path)                                                                               num_concepts)
         self.num_samples = num_samples
         self.num_concepts = num_concepts
         with open(description_path, 'r') as fp:

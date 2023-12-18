@@ -66,7 +66,8 @@ class Phi:
 
     def __call__(self, memdict: dict) -> torch.tensor:
         # for binary labels
-        return self._pytorch_expr(**memdict)[:, 0]
+        subset = {c: memdict.get(c, None).to(device) for c in self._distinct_concepts}
+        return self._pytorch_expr(**subset)[:, 0]
 
     def __and__(self, phi):
         return Phi(expr = self.expr & phi.expr,
