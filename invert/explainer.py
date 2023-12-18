@@ -1,24 +1,16 @@
 import os
 import warnings
-
-from tqdm import tqdm
-
+import torchmetrics
 import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-
-from invert.phi import Phi
-from invert.metrics import Metric
-
-from operator import itemgetter
 import sympy
-
 import json
 
+from tqdm import tqdm
+from invert.phi import Phi
+from operator import itemgetter
 from scipy.stats import mannwhitneyu
 
 warnings.simplefilter("default")
-
 
 class Invert:
     def __init__(
@@ -57,12 +49,14 @@ class Invert:
         #big one
         self.memdict = {concept.name :self.labels[:, i] for i,concept in enumerate(self.concepts)}
 
+    def _metric(self, a: torch.Tensor, b: torch.Tensor):
+        return torchmetrics.functional.classification.binary_auroc(a, b)
+
                 
     def explain_representation_test(self,
                                A: torch.Tensor,
                                L: int,
                                B: int,
-                               metric: Metric,
                                limit_search = None,
                                min_fraction=0.,
                                max_fraction=0.5,
@@ -87,7 +81,7 @@ class Invert:
 
             ATOMIC_CONCEPTS.append({"formula": formula,
                          "length": formula_length,
-                         "metric": metric(A, buffer),
+                         "metric": self._metric(A, buffer),
                          "concept_fraction": concept_fraction})
         
         if mode == "positive":
@@ -113,7 +107,7 @@ class Invert:
                     conjunction = BEAM[i]["formula"] & ATOMIC_CONCEPTS[j]["formula"]
                     if conjunction is not None:
                         _formula_buffer = conjunction(self.memdict)
-                        _metric = metric(A, _formula_buffer)
+                        _metric = self._metric(A, _formula_buffer)
                         _concept_fraction = _formula_buffer.sum()/self.num_samples
 
                         if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
@@ -125,7 +119,7 @@ class Invert:
                     disjunction = BEAM[i]["formula"] | ATOMIC_CONCEPTS[j]["formula"]
                     if disjunction is not None:
                         _formula_buffer = disjunction(self.memdict)
-                        _metric = metric(A, _formula_buffer)
+                        _metric = self._metric(A, _formula_buffer)
                         _concept_fraction = _formula_buffer.sum()/self.num_samples
 
                         if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
