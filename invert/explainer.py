@@ -30,8 +30,7 @@ class Invert:
                              labels_path: str,
                              num_samples: int,
                              num_concepts: int,
-                             description_path: str,
-                             dataset = "imagenet"):
+                             description_path: str):
         
         self.labels = torch.load(labels_path)                                                                               num_concepts)
         self.num_samples = num_samples
