@@ -31,25 +31,6 @@ class Invert:
 
         self.storage_dir = storage_dir
         self.make_folder_if_it_doesnt_exist(name=storage_dir)
-
-    def load_activations(self, A: torch.Tensor, Labels: torch.Tensor, description: dict, dataset: str):
-
-        self.A = A.to(self.device)
-        self.Labels = Labels.to(self.device)
-        self.dataset = dataset
-
-        if self.dataset == "imagenet":
-            self.concepts = {}
-            for i, k in enumerate(description):
-                self.concepts[i] = description[k]
-                self.concepts[i]["symbol"] = sympy.symbols(
-                    self.concepts[i]["offset"])
-        elif self.dataset == "coco":
-            self.concepts = {}
-            for i, k in enumerate(description):
-                self.concepts[i] = {"name" : description[k],
-                            "symbol" : sympy.symbols(str(k))
-                            }
                 
     def load_concept_labels(self,
                              labels_path: str,
@@ -166,108 +147,6 @@ class Invert:
         if memorize_states:
                 return states
         return BEAM
-
-
-
-
-
-
-
-
-
-        pass
-        
-
-    def explain_representation(self,
-                               r: int,
-                               L: int,
-                               B: int,
-                               metric: Metric,
-                               min_fraction=0.,
-                               max_fraction=0.5,
-                               mode = "positive",
-                               memorize_states = False):
-
-        N = self.A.shape[0]
-
-        # creating set of concepts
-        univariate_formulas = [Phi(expr=self.concepts[i]["symbol"],
-                                   concepts=[self.concepts[k]["symbol"]
-                                             for k in self.concepts],
-                                   concepts_to_indices={
-                                       self.concepts[key]["name"]: i for i, key in enumerate(self.concepts)},
-                                   boolean=True,
-                                   device=self.device,
-                                   buffer=(self.Labels[:, i] == 1).to(self.device)) for i in range(len(self.concepts))]
-
-        # adding the inverse ones
-        univariate_formulas += [~formula for formula in univariate_formulas]
-
-        # start beam search
-        formula_length = 1
-        # evaluate_univariate formulas and take best beam_search_size
-
-        top_formulas = [{"formula": formula,
-                         "length": formula_length,
-                         "metric": metric(self.A[:, r], formula.buffer),
-                         "concept_fraction": formula.buffer.sum()/N
-                         } for formula in univariate_formulas]
-        
-        if mode == "positive":
-            top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
-        elif mode == "negative":
-            top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
-
-        top_formulas = [
-            formula for formula in top_formulas if (formula["concept_fraction"] <= max_fraction) & (formula["concept_fraction"] >= min_fraction)][:B]
-        
-        if memorize_states:
-            states = {}
-            states["1"] = top_formulas.copy()
-
-        formula_length = 2
-        while formula_length <= L:
-            for i in range(min(B, len(top_formulas))):
-                for j in range(len(univariate_formulas)):
-                    conjunction = top_formulas[i]["formula"] & univariate_formulas[j]
-                    if conjunction is not None:
-                        _metric = metric(self.A[:, r], conjunction.buffer)
-                        _sum = conjunction.buffer.sum()
-                        _concept_fraction = _sum/N
-
-                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
-                            top_formulas.append({"formula": conjunction,
-                                                 "length": formula_length,
-                                                 "metric": _metric,
-                                                 "concept_fraction": _concept_fraction})
-
-                    disjunction = top_formulas[i]["formula"] | univariate_formulas[j]
-                    if disjunction is not None:
-                        _metric = metric(self.A[:, r], disjunction.buffer)
-                        _sum = disjunction.buffer.sum()
-                        _concept_fraction = _sum/N
-
-                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
-                            top_formulas.append({"formula": disjunction,
-                                                 "length": formula_length,
-                                                 "metric": _metric,
-                                                 "concept_fraction": _concept_fraction})
-            
-            if mode == "positive":
-                top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=True)
-            elif mode == "negative":
-                top_formulas = sorted(top_formulas, key=itemgetter("metric"), reverse=False)
-
-            top_formulas = top_formulas[:min(B, len(top_formulas))]
-
-            if memorize_states:
-                states[str(formula_length)] = top_formulas.copy()
-
-            formula_length += 1
-
-        if memorize_states:
-                return states
-        return top_formulas
 
     def __get_filenames_in_a_folder(self, folder: str):
         """
