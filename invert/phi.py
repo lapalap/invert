@@ -53,20 +53,16 @@ class Phi:
         :param expr:
         :param concepts:
         """
-        # we support only logic for now
-
-        # self.expr = sympy.logic.boolalg.SOPform(
-        #     expr, form="cnf"
-        # )  # expression itself
         self.expr = expr
-        self._distinct_concepts = self.expr.free_symbols
+        self._distinct_concepts = list(self.expr.free_symbols)
         self.device = device
         self._pytorch_expr = sympytorch.SymPyModule(expressions=[self.expr],
                                             extra_funcs=_updated_func_lookup).to(self.device)
 
+    @torch.no_grad()
     def __call__(self, memdict: dict) -> torch.tensor:
         # for binary labels
-        subset = {c: memdict.get(c, None).to(device) for c in self._distinct_concepts}
+        subset = {c.name: memdict.get(c.name, None).to(self.device) for c in self._distinct_concepts}
         return self._pytorch_expr(**subset)[:, 0]
 
     def __and__(self, phi):

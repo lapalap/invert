@@ -13,6 +13,7 @@ from scipy.stats import mannwhitneyu
 warnings.simplefilter("default")
 
 class Invert:
+    
     def __init__(
         self,
         storage_dir=".invert/",
@@ -46,7 +47,7 @@ class Invert:
     def _metric(self, a: torch.Tensor, b: torch.Tensor):
         return torchmetrics.functional.classification.binary_auroc(a, b)
 
-                
+    @torch.no_grad()            
     def explain_representation_test(self,
                                A: torch.Tensor,
                                L: int,
@@ -63,20 +64,23 @@ class Invert:
         for i in tqdm(range(2*self.num_concepts)):
             q = i % self.num_concepts
             if i // self.num_concepts == 0:
-                formula = Phi(expr=self.concepts[q],
+                _formula = Phi(expr=self.concepts[q],
                               device = self.device)
-                buffer = self.memdict[self.concepts[q].name]
+                _buffer = self.memdict[self.concepts[q].name].to(self.device)
+                _metric = self._metric(A, _buffer)
+                _concept_fraction = _buffer.sum()/self.num_samples
             else:
-                formula = Phi(expr=~self.concepts[q],
+                _formula = Phi(expr=~self.concepts[q],
                               device = self.device)
-                buffer = ~self.memdict[self.concepts[q].name]
+                _buffer = ~self.memdict[self.concepts[q].name]
+                _metric = 1 - ATOMIC_CONCEPTS[q]["metric"]
+                _concept_fraction = 1 - ATOMIC_CONCEPTS[q]["concept_fraction"]
 
-            concept_fraction = buffer.sum()/self.num_samples
-
-            ATOMIC_CONCEPTS.append({"formula": formula,
+            ATOMIC_CONCEPTS.append({"formula": _formula,
                          "length": formula_length,
-                         "metric": self._metric(A, buffer),
-                         "concept_fraction": concept_fraction})
+                         "metric": _metric,
+                         "concept_fraction": _concept_fraction})
+        del _buffer
         
         if mode == "positive":
             ATOMIC_CONCEPTS = sorted(ATOMIC_CONCEPTS, key=itemgetter("metric"), reverse=True)
