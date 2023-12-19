@@ -79,6 +79,7 @@ class Invert:
             ATOMIC_CONCEPTS.append({"formula": _formula,
                          "length": formula_length,
                          "metric": _metric,
+                         "differentiability": 2*abs(0.5 - _metric),
                          "concept_fraction": _concept_fraction})
         del _buffer
         
@@ -87,15 +88,17 @@ class Invert:
         elif mode == "negative":
             ATOMIC_CONCEPTS = sorted(ATOMIC_CONCEPTS, key=itemgetter("metric"), reverse=False)
 
-        if limit_search is None:
-            limit_search = len(ATOMIC_CONCEPTS)
-
         BEAM = [
             formula for formula in ATOMIC_CONCEPTS if (formula["concept_fraction"] <= max_fraction) & (formula["concept_fraction"] >= min_fraction)][:B]
-
+            
         if memorize_states:
             states = {}
             states["1"] = BEAM.copy()
+            
+        ATOMIC_CONCEPTS = sorted(ATOMIC_CONCEPTS, key=itemgetter("differentiability"), reverse=True)
+        if limit_search is None:
+            limit_search = len(ATOMIC_CONCEPTS)
+        ATOMIC_CONCEPTS = ATOMIC_CONCEPTS[:limit_search]
 
         formula_length = 2
 
@@ -112,6 +115,7 @@ class Invert:
                             BEAM.append({"formula": conjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
+                                                 "differentiability": 2*abs(0.5 - _metric),
                                                  "concept_fraction": _concept_fraction})
 
                     disjunction = BEAM[i]["formula"] | ATOMIC_CONCEPTS[j]["formula"]
@@ -124,6 +128,7 @@ class Invert:
                             BEAM.append({"formula": disjunction,
                                                  "length": formula_length,
                                                  "metric": _metric,
+                                                 "differentiability": 2*abs(0.5 - _metric),
                                                  "concept_fraction": _concept_fraction})
             
             if mode == "positive":
@@ -169,8 +174,10 @@ class Invert:
     def get_activations(self):
         raise NotImplementedError
     
-    def get_p_value(self, r: int, explanation: Phi, alternative='two-sided'):
-        U1, p = mannwhitneyu(self.A[explanation.buffer.cpu() == 0, r].cpu(), self.A[explanation.buffer.cpu() == 1, r].cpu(),
+    def get_p_value(self, A: torch.Tensor, explanation: Phi, alternative='two-sided'):
+        _buffer = explanation(self.memdict)
+        
+        U1, p = mannwhitneyu(A[~_buffer].cpu(), self.A[_buffer].cpu(),
                              alternative = alternative)
 
         return p
