@@ -18,6 +18,11 @@ from typing import (
     Union,
 )
 
+from sympytorch.sympy_module import _global_func_lookup
+
+_global_func_lookup[sympy.And] = _reduce(torch.mul)
+_global_func_lookup[sympy.Or] = _reduce(torch.add)
+
 ExprType = TypeVar("ExprType", bound=sympy.Expr)
 T = TypeVar("T")
 
@@ -33,11 +38,6 @@ _updated_func_lookup: Dict[
     sympy.And: _reduce(torch.mul),
     sympy.Or: _reduce(torch.add),
 }
-
-from sympytorch.sympy_module import _global_func_lookup
-
-_global_func_lookup[sympy.And] = _reduce(torch.mul)
-_global_func_lookup[sympy.Or] = _reduce(torch.add)
 
 class Phi:
     @torch.no_grad()

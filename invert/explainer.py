@@ -61,7 +61,7 @@ class Invert:
         formula_length = 1
         # evaluate_univariate formulas and take best beam_search_size
         ATOMIC_CONCEPTS = []
-        for i in tqdm(range(2*self.num_concepts)):
+        for i in range(2*self.num_concepts):
             q = i % self.num_concepts
             if i // self.num_concepts == 0:
                 _formula = Phi(expr=self.concepts[q],
@@ -103,7 +103,7 @@ class Invert:
         formula_length = 2
 
         while formula_length <= L:
-            for i in tqdm(range(min(B, len(BEAM)))):
+            for i in range(min(B, len(BEAM))):
                 for j in range(limit_search):
                     conjunction = BEAM[i]["formula"] & ATOMIC_CONCEPTS[j]["formula"]
                     if conjunction is not None:
