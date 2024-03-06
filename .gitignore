@@ -5,3 +5,4 @@ assets/imagenet/ILSVRC2012_classes_old.json
 assets/imagenet/ILSVRC2012_classes_original.json
 assets/imagenet/ILSVRC2012_val_original.csv
 assets/imagenet/ILSVRC2012_classes_full.json
+one_hot_labels.tnsr
