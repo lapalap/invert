@@ -6,3 +6,4 @@ assets/imagenet/ILSVRC2012_classes_original.json
 assets/imagenet/ILSVRC2012_val_original.csv
 assets/imagenet/ILSVRC2012_classes_full.json
 assets/imagenet/one_hot_labels.tnsr
+one_hot_labels.tnsr

@@ -49,6 +49,25 @@ You can get started with the following [colab notebook](https://colab.research.g
 
 <br> 
 <div align="center">
+<img src="./assets/images/updates.svg" height="40"/>
+</div>
+<br> 
+
+## Version 1.1
+The latest update brings several enhancements to our software:
+
+- Improved Interface: We’ve introduced a fresh, user-friendly interface that enhances your experience.
+- Speed Boost: Explanation generation is now faster, allowing you to get insights more swiftly.
+- Memory Optimization: We’ve fine-tuned memory usage for better efficiency.
+
+Specifically:
+
+- The Phi class now supports `sympytorch`, streamlining the explanation generation process.
+- Our new interface enables the `explain_representation` method to work seamlessly with individual activation tensors from a single unit.
+
+
+<br> 
+<div align="center">
 <img src="./assets/images/citation.svg" height="40"/>
 </div>
 <br> 

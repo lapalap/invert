@@ -88,24 +88,3 @@ class Phi:
     
     def describe(self, concept_description: dict):
          self.info["str"]
-        
-
-
-# #### PHI EXAMPLE START #####
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#
-# N_S = 80
-# text_symbols = ["c{i}".format(i=i) for i in range(80)]
-# S = sympy.symbols(text_symbols)
-#
-# concepts_to_indices = {text_symbols[i]: i for i in range(80)}
-# formula = ~S[0]
-#
-# phi = Phi(
-#     expr=formula,
-#     concepts=S,
-#     concepts_to_indices=concepts_to_indices,
-#     boolean=True,
-#     device=device,
-# )
-# print(phi.info)
