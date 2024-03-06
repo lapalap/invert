@@ -73,10 +73,11 @@ Specifically:
 <br> 
 
 ```bibtex
-@article{bykov2023labeling,
-  title={Labeling Neural Representations with Inverse Recognition},
-  author={Bykov, Kirill and Kopf, Laura and Nakajima, Shinichi and Kloft, Marius and H{\"o}hne, Marina M-C},
-  journal={arXiv preprint arXiv:2311.13594},
-  year={2023}
+@article{bykov2024labeling,
+  title={Labeling neural representations with inverse recognition},
+  author={Bykov, Kirill and Kopf, Laura and Nakajima, Shinichi and Kloft, Marius and H{\"o}hne, Marina},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
 }
 ```
