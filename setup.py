@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
 
 setuptools.setup(
     name="invert",
-    version="0.0.1",
+    version="1.1",
     author="Kiril Bykov",
     author_email="kirill079@gmail.com",
     description="Labeling Neural Representations with Inverse Recognition",
