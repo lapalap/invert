@@ -33,4 +33,9 @@ class ImageDataset(Dataset):
             image=self.transform(image)
 
             return image
+
+def find_by_offset(search_value:str, d:dict):
+  for k in d:
+    if d[k]['offset'] == search_value:
+      return d[k]
     

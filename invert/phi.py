@@ -85,6 +85,3 @@ class Phi:
         :return:
         """
         return self.expr.__str__()
-    
-    def describe(self, concept_description: dict):
-         self.info["str"]

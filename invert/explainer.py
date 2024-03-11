@@ -4,12 +4,12 @@ import torchmetrics
 import torch
 import sympy
 import json
-from invert.phi import Phi
 from operator import itemgetter
 from scipy.stats import mannwhitneyu
 from typing import List, Dict, TypedDict
 
-from typing import TypedDict
+from invert.utils import find_by_offset
+from invert.phi import Phi
 
 class Explanation(TypedDict):
     formula: Phi
@@ -211,3 +211,21 @@ class Invert:
                              alternative=alternative)
 
         return p
+    
+    def explain_formula(self, explanation: Phi):
+
+        human_readable_explanation = str(explanation)
+        output = {}
+        elements = []
+        
+        for element in explanation._distinct_concepts:
+            label = find_by_offset(str(element), self.description)
+            elements.append({'wordnet': element, 'description': label['name'], 'full_description': label['definition']})
+            human_readable_explanation = human_readable_explanation.replace(str(element), label['name'])
+        
+        output = {'label': human_readable_explanation,
+                  'details': elements}
+        
+        return output
+        
+        
