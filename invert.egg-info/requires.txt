@@ -1,0 +1,10 @@
+torch
+tqdm
+torchmetrics
+sympy
+opencv-python
+torchvision
+Pillow
+scipy
+pycocotools
+sympytorch
