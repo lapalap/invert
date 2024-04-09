@@ -11,12 +11,14 @@ from typing import List, Dict, TypedDict
 from invert.utils import find_by_offset
 from invert.phi import Phi
 
+
 class Explanation(TypedDict):
     formula: Phi
     length: int
     metric: float
     differentiability: float
     concept_fraction: float
+
 
 warnings.simplefilter("default")
 
@@ -49,7 +51,7 @@ class Invert:
         self.labels = torch.load(labels_path)
         self.num_samples = self.labels.shape[0]
         self.num_concepts = self.labels.shape[1]
-        
+
         with open(description_path, 'r') as fp:
             self.description = json.load(fp)
 
@@ -98,7 +100,7 @@ class Invert:
         """
         # put A to self.device
         A = A.to(self.device)
-        
+
         # start beam search
         formula_length = 1
         # evaluate_univariate formulas and take best beam_search_size
@@ -133,7 +135,10 @@ class Invert:
                 ATOMIC_CONCEPTS, key=itemgetter("metric"), reverse=False)
 
         BEAM = [
-            formula for formula in ATOMIC_CONCEPTS if (formula["concept_fraction"] < max_fraction) & (formula["concept_fraction"] > min_fraction)][:B]
+            formula for formula in ATOMIC_CONCEPTS if ((formula["concept_fraction"] <= max_fraction) &
+            (formula["concept_fraction"] >= min_fraction) &
+            (formula["concept_fraction"] > 0.) &
+            (formula["concept_fraction"] < 1.))][:B]
 
         if memorize_states:
             states = {}
@@ -156,7 +161,10 @@ class Invert:
                         _metric = self._metric(A, _formula_buffer)
                         _concept_fraction = _formula_buffer.sum()/self.num_samples
 
-                        if (_concept_fraction > min_fraction) & (_concept_fraction < max_fraction):
+                        if ((_concept_fraction >= min_fraction) &
+                        (_concept_fraction <= max_fraction) &
+                        (_concept_fraction < 1.) &
+                        (_concept_fraction > 0.)):
                             BEAM.append({"formula": conjunction,
                                          "length": formula_length,
                                          "metric": _metric,
@@ -169,7 +177,10 @@ class Invert:
                         _metric = self._metric(A, _formula_buffer)
                         _concept_fraction = _formula_buffer.sum()/self.num_samples
 
-                        if (_concept_fraction > min_fraction) & (_concept_fraction < max_fraction):
+                        if ((_concept_fraction >= min_fraction) &
+                        (_concept_fraction <= max_fraction) &
+                        (_concept_fraction < 1.) &
+                        (_concept_fraction > 0.)):
                             BEAM.append({"formula": disjunction,
                                          "length": formula_length,
                                          "metric": _metric,
@@ -211,21 +222,23 @@ class Invert:
                              alternative=alternative)
 
         return p
-    
+
     def explain_formula(self, explanation: Phi):
 
         human_readable_explanation = str(explanation)
         output = {}
         elements = []
-        
+
         for element in explanation._distinct_concepts:
             label = find_by_offset(str(element), self.description)
-            elements.append({'wordnet': element, 'description': label['name'], 'full_description': label['definition']})
-            human_readable_explanation = human_readable_explanation.replace(str(element), label['name'])
-        
+            elements.append(
+                {'wordnet': element, 'description': label['name'], 'full_description': label['definition']})
+            human_readable_explanation = human_readable_explanation.replace(
+                str(element), label['name'])
+
         output = {'label': human_readable_explanation,
                   'details': elements}
-        
+
         return output
         
         
