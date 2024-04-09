@@ -133,7 +133,7 @@ class Invert:
                 ATOMIC_CONCEPTS, key=itemgetter("metric"), reverse=False)
 
         BEAM = [
-            formula for formula in ATOMIC_CONCEPTS if (formula["concept_fraction"] <= max_fraction) & (formula["concept_fraction"] >= min_fraction)][:B]
+            formula for formula in ATOMIC_CONCEPTS if (formula["concept_fraction"] < max_fraction) & (formula["concept_fraction"] > min_fraction)][:B]
 
         if memorize_states:
             states = {}
@@ -156,7 +156,7 @@ class Invert:
                         _metric = self._metric(A, _formula_buffer)
                         _concept_fraction = _formula_buffer.sum()/self.num_samples
 
-                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
+                        if (_concept_fraction > min_fraction) & (_concept_fraction < max_fraction):
                             BEAM.append({"formula": conjunction,
                                          "length": formula_length,
                                          "metric": _metric,
@@ -169,7 +169,7 @@ class Invert:
                         _metric = self._metric(A, _formula_buffer)
                         _concept_fraction = _formula_buffer.sum()/self.num_samples
 
-                        if (_concept_fraction >= min_fraction) & (_concept_fraction <= max_fraction):
+                        if (_concept_fraction > min_fraction) & (_concept_fraction < max_fraction):
                             BEAM.append({"formula": disjunction,
                                          "length": formula_length,
                                          "metric": _metric,
